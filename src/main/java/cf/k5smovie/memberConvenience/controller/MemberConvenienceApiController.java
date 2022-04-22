@@ -1,14 +1,14 @@
 package cf.k5smovie.memberConvenience.controller;
 
-import cf.k5smovie.memberConvenience.dto.MemberNicknameResponseDto;
-import cf.k5smovie.memberConvenience.dto.MyInformationRequestDto;
-import cf.k5smovie.memberConvenience.dto.SignUpRequestDto;
+import cf.k5smovie.memberConvenience.dto.*;
 import cf.k5smovie.memberConvenience.error.NoSuchMemberException;
 import cf.k5smovie.memberConvenience.service.MemberConvenienceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +32,14 @@ public class MemberConvenienceApiController {
         String memberNickname = memberConvenienceService.getMemberNickname(memberId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new MemberNicknameResponseDto(memberNickname));
+    }
+
+    @PostMapping("/member/nicknames")
+    public ResponseEntity getMemberNicknames(@RequestBody MemberNicknamesRequestDto dto) {
+        List<MemberIdNicknameDto> memberNicknames = memberConvenienceService.getMemberNicknames(dto.getIds());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new MemberNicknamesResponseDto(memberNicknames));
     }
 
     @ExceptionHandler

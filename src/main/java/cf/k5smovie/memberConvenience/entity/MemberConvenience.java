@@ -40,4 +40,8 @@ public class MemberConvenience {
     public void changeProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
+
+    public String getNickname() {
+        return nickname;
+    }
 }

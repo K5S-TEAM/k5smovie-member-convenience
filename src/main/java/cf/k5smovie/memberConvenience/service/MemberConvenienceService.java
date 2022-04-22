@@ -2,6 +2,7 @@ package cf.k5smovie.memberConvenience.service;
 
 import cf.k5smovie.memberConvenience.dto.AuthenticationRequestDto;
 import cf.k5smovie.memberConvenience.dto.AuthenticationResponseDto;
+import cf.k5smovie.memberConvenience.dto.MemberIdNicknameDto;
 import cf.k5smovie.memberConvenience.dto.SignUpRequestDto;
 import cf.k5smovie.memberConvenience.entity.MemberConvenience;
 import cf.k5smovie.memberConvenience.error.InvalidAuthenticationException;
@@ -17,6 +18,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -97,5 +100,15 @@ public class MemberConvenienceService {
     public String getMemberNickname(Long memberId) {
         return memberConvenienceRepository.findById(memberId)
                 .orElseThrow(() -> new NoSuchMemberException("사용자 정보가 존재하지 않습니다.")).getNickname();
+    }
+
+    @Transactional
+    public List<MemberIdNicknameDto> getMemberNicknames(List<Long> ids) {
+        List<MemberConvenience> result = memberConvenienceRepository.findByIdIn(ids);
+
+        return result
+                .stream()
+                .map(MemberIdNicknameDto::new)
+                .collect(Collectors.toList());
     }
 }
