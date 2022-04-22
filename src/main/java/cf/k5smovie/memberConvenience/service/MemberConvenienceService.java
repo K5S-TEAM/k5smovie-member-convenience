@@ -30,7 +30,7 @@ public class MemberConvenienceService {
     String authServerUrl;
 
     @Transactional
-    public void saveNickname(SignUpRequestDto dto) {
+    public void saveMemberConvenience(SignUpRequestDto dto) {
         MemberConvenience memberConvenience = new MemberConvenience(dto.getId(), dto.getNickname());
         memberConvenienceRepository.save(memberConvenience);
     }
@@ -91,5 +91,11 @@ public class MemberConvenienceService {
         }
 
         return result.getId();
+    }
+
+    @Transactional
+    public String getMemberNickname(Long memberId) {
+        return memberConvenienceRepository.findById(memberId)
+                .orElseThrow(() -> new NoSuchMemberException("사용자 정보가 존재하지 않습니다.")).getNickname();
     }
 }
