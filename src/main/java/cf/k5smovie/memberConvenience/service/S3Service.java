@@ -21,7 +21,7 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public static String s3Path = "templates/memberConvenience";
+    public static String s3Path = "memberConvenience";
 
     public String upload(MultipartFile file, String dirPath) throws IOException {
         String fileName = createFileName(file.getOriginalFilename());
