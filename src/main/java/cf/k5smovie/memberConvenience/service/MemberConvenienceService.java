@@ -11,6 +11,7 @@ import cf.k5smovie.memberConvenience.repository.MemberConvenienceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,16 +40,14 @@ public class MemberConvenienceService {
     }
 
     @Transactional
-    public MemberConvenience getMyInformation(String accessToken) {
-        Long id = requestAuthentication(accessToken);
-
+    public MemberConvenience getMyInformation(Long id) {
         return memberConvenienceRepository.findById(id)
                 .orElseThrow(() -> new NoSuchMemberException("사용자 정보가 존재하지 않습니다."));
     }
 
     @Transactional
-    public void updateMyInformation(String accessToken, String nickname, MultipartFile image) {
-        MemberConvenience myInformation = getMyInformation(accessToken);
+    public void updateMyInformation(Long id, String nickname, MultipartFile image) {
+        MemberConvenience myInformation = getMyInformation(id);
 
         //이름 변경
         if (!nickname.equals(myInformation.getNickname())) {
@@ -78,7 +77,7 @@ public class MemberConvenienceService {
     }
 
     @Transactional
-    public Long requestAuthentication(String accessToken) {
+    public AuthenticationResponseDto requestAuthentication(String accessToken) {
         AuthenticationRequestDto dto = new AuthenticationRequestDto(accessToken);
 
         AuthenticationResponseDto result = webClient.post()
@@ -93,7 +92,20 @@ public class MemberConvenienceService {
             throw new InvalidAuthenticationException("인증 정보가 존재하지 않습니다.");
         }
 
-        return result.getId();
+        return result;
+    }
+
+    @Transactional
+    public void requestLogout(String accessToken) {
+        AuthenticationRequestDto dto = new AuthenticationRequestDto(accessToken);
+
+        webClient.post()
+                .uri("/auth/logout")
+                .body(Mono.just(dto), AuthenticationRequestDto.class)
+                .retrieve()
+                .onStatus(HttpStatus::is5xxServerError, error -> Mono.error(new InvalidAuthenticationException("인증 정보가 존재하지 않습니다.")))
+                .toBodilessEntity()
+                .block();
     }
 
     @Transactional

@@ -1,8 +1,10 @@
 package cf.k5smovie.memberConvenience.controller;
 
 
+import cf.k5smovie.memberConvenience.dto.AuthenticationResponseDto;
 import cf.k5smovie.memberConvenience.dto.MyInformationResponseDto;
 import cf.k5smovie.memberConvenience.entity.MemberConvenience;
+import cf.k5smovie.memberConvenience.error.ApiNotRespondException;
 import cf.k5smovie.memberConvenience.error.InvalidAuthenticationException;
 import cf.k5smovie.memberConvenience.error.NoSuchMemberException;
 import cf.k5smovie.memberConvenience.error.S3ConnectException;
@@ -31,8 +33,13 @@ public class MemberConvenienceController {
             throw new InvalidAuthenticationException("인증 정보가 존재하지 않습니다.");
         }
 
-        MemberConvenience memberConvenience = memberConvenienceService.getMyInformation(accessToken);
+        //토큰 인증 확인
+        AuthenticationResponseDto authenticationResponseDto = memberConvenienceService.requestAuthentication(accessToken);
 
+        //정보 get
+        MemberConvenience memberConvenience = memberConvenienceService.getMyInformation(authenticationResponseDto.getId());
+
+        model.addAttribute("memberName", authenticationResponseDto.getName());
         model.addAttribute("myInformationResponseDto", new MyInformationResponseDto(memberConvenience));
         return "memberConvenience/my-page";
     }
@@ -44,7 +51,21 @@ public class MemberConvenienceController {
             throw new InvalidAuthenticationException("인증 정보가 존재하지 않습니다.");
         }
 
-        memberConvenienceService.updateMyInformation(accessToken, nickname, image);
+        //토큰 인증 확인
+        AuthenticationResponseDto authenticationResponseDto = memberConvenienceService.requestAuthentication(accessToken);
+
+        //정보 update
+        memberConvenienceService.updateMyInformation(authenticationResponseDto.getId(), nickname, image);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/member/request-logout")
+    public ResponseEntity requestLogout(@CookieValue(value = "accessToken", required = false) String accessToken) {
+        if (accessToken == null) {
+            throw new InvalidAuthenticationException("인증 정보가 존재하지 않습니다.");
+        }
+
+        memberConvenienceService.requestLogout(accessToken);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -61,5 +82,10 @@ public class MemberConvenienceController {
     @ExceptionHandler
     public ResponseEntity s3ConnectExceptionHandler(S3ConnectException e) {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+    }
+
+    @ExceptionHandler
+    public ResponseEntity apiNotRespondExceptionHandler(ApiNotRespondException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 }
