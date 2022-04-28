@@ -71,7 +71,7 @@ public class MemberConvenienceController {
 
     @ExceptionHandler
     public String invalidAuthenticationExceptionHandler(InvalidAuthenticationException e) {
-        return "redirect:" + authServerUrl + "/auth/login";
+        return "redirect:https://k5smovie.ga/auth/login";
     }
 
     @ExceptionHandler
